@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAEE - Calendário de Eventos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --caee-blue: #0000ff; --caee-yellow: #ffcc00; --caee-red: #ff0000; --caee-green: #008000; --bg-main: #f4f6fc; --sidebar-w: 280px; --card-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-main); display: flex; }
+        .sidebar { width: var(--sidebar-w); background: var(--caee-blue); color: white; padding: 2.5rem 1.5rem; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .sidebar h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 2.5rem; color: var(--caee-yellow); text-shadow: 2px 2px 0px #000; }
+        .nav-link { display: flex; align-items: center; gap: 14px; color: rgba(255,255,255,0.8); padding: 1rem 1.25rem; text-decoration: none; border-radius: 16px; margin-bottom: 0.75rem; font-weight: 600; }
+        .nav-link.active { background: var(--caee-yellow); color: #000; }
+        .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 3rem; }
+        .dashboard-grid { display: grid; grid-template-columns: 1.2fr 1.5fr; gap: 2rem; margin-bottom: 2.5rem; }
+        .card { background: white; border-radius: 24px; padding: 2.5rem; box-shadow: var(--card-shadow); border-top: 6px solid var(--caee-red); margin-bottom: 2rem; }
+        .card.list-card { border-top-color: var(--caee-green); }
+        label { display: block; margin-top: 15px; font-weight: 600; color: #475569; }
+        input, textarea { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 14px; margin-top: 5px; background: #f8fafc; }
+        textarea { resize: none; height: 100px; }
+        .btn-submit { margin-top: 25px; width: 100%; padding: 14px; background: var(--caee-red); color: white; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; }
+        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; background: #f8fafc; border-radius: 16px; margin-bottom: 14px; border-left: 5px solid var(--caee-red); }
+        .event-date { background: #fee2e2; color: var(--caee-red); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 8px; }
+        .row-actions { display: flex; gap: 12px; }
+        .btn-action { border: none; background: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2><i class="fas fa-puzzle-piece"></i> Gestão CAEE</h2>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Painel Geral</a></li>
+            <li><a href="cadastro-crianca.html" class="nav-link"><i class="fas fa-child"></i> Gerenciar Crianças</a></li>
+            <li><a href="cadastro-profissional.html" class="nav-link"><i class="fas fa-user-doctor"></i> Gerenciar Equipe</a></li>
+            <li><a href="calendario-eventos.html" class="nav-link active"><i class="fas fa-calendar-days"></i> Eventos e Ações</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="dashboard-grid">
+            <div class="card">
+                <h2 id="form-title"><i class="fas fa-calendar-plus" style="color:var(--caee-red)"></i> Agendar Evento</h2>
+                <form id="form-evento">
+                    <input type="hidden" id="edit-id">
+                    <label>Nome do Evento:</label><input type="text" id="nome-evento" required placeholder="Ex: Reunião Pedagógica">
+                    <label>Data e Horário:</label><input type="text" id="data-evento" required placeholder="Ex: 18 de Julho às 09:00">
+                    <label>Descrição / Pauta:</label><textarea id="desc-evento" required placeholder="Assuntos a tratar..."></textarea>
+                    <button type="submit" class="btn-submit" id="btn-submit">Publicar</button>
+                </form>
+            </div>
+            <div class="card list-card">
+                <h2><i class="fas fa-bullhorn" style="color:var(--caee-green)"></i> Cronograma Geral</h2>
+                <div id="lista-eventos-caee"></div>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const _supabase = supabase.createClient('https://entcirynxefxdncivhmy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudGNpcnlueGVmeGRuY2l2aG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjU0NDIsImV4cCI6MjA5ODg0MTQ0Mn0.VT0hR_G6_jnXlO28UcdFnwfsM97zyKv4NKznIfEWH2Y');
+
+        async function renderEventos() {
+            const { data: eventos } = await _supabase.from('eventos_caee').select('*').order('id');
+            const container = document.getElementById('lista-eventos-caee');
+            container.innerHTML = eventos?.length === 0 ? "<p>Nenhum evento registrado.</p>" : "";
+
+            eventos?.forEach(ev => {
+                container.innerHTML += `
+                    <div class="list-row">
+                        <div><strong>${ev.nome}</strong><p>${ev.descricao}</p></div>
+                        <div style="text-align:right">
+                            <span class="event-date">${ev.data}</span>
+                            <div class="row-actions">
+                                <button onclick="prepararEdicao(${ev.id}, '${ev.nome}', '${ev.data}', '${ev.descricao}')" class="btn-action" style="color:blue">Editar</button>
+                                <button onclick="removerEvento(${ev.id})" class="btn-action" style="color:red">Remover</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        document.getElementById('form-evento').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const payload = { nome: document.getElementById('nome-evento').value, data: document.getElementById('data-evento').value, descricao: document.getElementById('desc-evento').value };
+
+            if(!id) { await _supabase.from('eventos_caee').insert([payload]); } 
+            else { await _supabase.from('eventos_caee').update(payload).eq('id', id); }
+
+            document.getElementById('form-evento').reset();
+            document.getElementById('edit-id').value = "";
+            renderEventos();
+        };
+
+        window.prepararEdicao = (id, nome, data, desc) => {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('nome-evento').value = nome;
+            document.getElementById('data-evento').value = data;
+            document.getElementById('desc-evento').value = desc;
+        };
+
+        window.removerEvento = async (id) => {
+            if(confirm("Deseja remover este evento?")) {
+                await _supabase.from('eventos_caee').delete().eq('id', id);
+                renderEventos();
+            }
+        };
+
+        renderEventos();
+    </script>
+</body>
+</html>

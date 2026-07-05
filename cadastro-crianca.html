@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAEE - Gerenciar Crianças</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --caee-blue: #0000ff; --caee-yellow: #ffcc00; --caee-red: #ff0000; --caee-green: #008000; --bg-main: #f4f6fc; --sidebar-w: 280px; --card-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-main); display: flex; }
+        .sidebar { width: var(--sidebar-w); background: var(--caee-blue); color: white; padding: 2.5rem 1.5rem; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .sidebar h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 2.5rem; color: var(--caee-yellow); text-shadow: 2px 2px 0px #000; }
+        .nav-link { display: flex; align-items: center; gap: 14px; color: rgba(255,255,255,0.8); padding: 1rem 1.25rem; text-decoration: none; border-radius: 16px; margin-bottom: 0.75rem; font-weight: 600; }
+        .nav-link.active { background: var(--caee-yellow); color: #000; }
+        .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 3rem; }
+        .card { background: white; border-radius: 24px; padding: 2.5rem; box-shadow: var(--card-shadow); border-top: 6px solid var(--caee-blue); margin-bottom: 2rem; }
+        .card.filter-card { border-top-color: var(--caee-yellow); }
+        .header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 15px; }
+        input, select { width: 100%; padding: 14px; border: 2px solid #e2e8f0; border-radius: 14px; margin-top: 5px; background: #f8fafc; }
+        label.secao-label { display: block; margin-top: 15px; font-weight: 600; color: #475569; }
+        .especialidades-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-top: 8px; }
+        .checkbox-option { display: flex; align-items: center; gap: 10px; background: #f8fafc; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; cursor: pointer; }
+        .checkbox-option input { width: auto; margin: 0; }
+        .btn-submit { padding: 14px; background: var(--caee-blue); color: white; border: none; border-radius: 50px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 15px; }
+        .btn-print { background: var(--caee-green); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; padding: 12px 16px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
+        td { padding: 16px; background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+        .badge-especialidade { background: #e0e7ff; color: var(--caee-blue); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; display: inline-block; margin: 2px; }
+        .crud-btn { background: none; border: none; cursor: pointer; font-size: 1.1rem; margin-right: 12px; }
+        @media print {
+            @page { size: landscape; margin: 1cm; }
+            body { background: white; color: black; }
+            .sidebar, .main-content > *:not(.print-section), .card, .btn-print, select, th:last-child, td:last-child { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+            .print-section { display: block !important; }
+            .print-table { width: 100%; border-collapse: collapse; }
+            .print-table th, .print-table td { border: 1px solid black; padding: 12px; text-align: left; }
+        }
+        .print-section { display: none; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2><i class="fas fa-puzzle-piece"></i> Gestão CAEE</h2>
+        <ul class="nav-links">
+            <li><a href="index.html" class="nav-link"><i class="fas fa-chart-pie"></i> Painel Geral</a></li>
+            <li><a href="cadastro-crianca.html" class="nav-link active"><i class="fas fa-child"></i> Gerenciar Crianças</a></li>
+            <li><a href="cadastro-profissional.html" class="nav-link"><i class="fas fa-user-doctor"></i> Gerenciar Equipe</a></li>
+            <li><a href="calendario-eventos.html" class="nav-link"><i class="fas fa-calendar-days"></i> Eventos e Ações</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="card">
+            <h2 id="form-title"><i class="fas fa-user-plus" style="color:var(--caee-blue)"></i> Registrar Aluno</h2>
+            <form id="form-crianca">
+                <input type="hidden" id="edit-id">
+                <div class="input-grid">
+                    <input type="text" id="nome" placeholder="Nome Completo" required>
+                    <input type="text" id="escola" placeholder="Escola Regular" required>
+                    <select id="aee"><option value="Sim">Possui Sala AEE</option><option value="Não">Não possui Sala AEE</option></select>
+                </div>
+                <label class="secao-label">Especialidades Recomendadas:</label>
+                <div class="especialidades-grid" id="container-especialidades-dinamicas"></div>
+                <button type="submit" class="btn-submit" id="btn-submit">Salvar Registro</button>
+            </form>
+        </div>
+
+        <div class="card filter-card">
+            <div class="header-box">
+                <h2><i class="fas fa-filter" style="color: #d97706"></i> Filtragem Semanal</h2>
+                <button class="btn-print" onclick="imprimirRelatorioAlunos()"><i class="fas fa-print"></i> Imprimir Mapa</button>
+            </div>
+            <select id="filtro-especialidade" onchange="renderTable()" style="max-width: 350px; margin-bottom: 20px;"></select>
+            <table>
+                <thead><tr><th>Aluno</th><th>Escola Regular</th><th>Sala AEE?</th><th>Especialidades</th><th style="text-align:right">Controle</th></tr></thead>
+                <tbody id="corpo-tabela"></tbody>
+            </table>
+        </div>
+        <div id="zona-impressao-alunos" class="print-section"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const _supabase = supabase.createClient('https://entcirynxefxdncivhmy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudGNpcnlueGVmeGRuY2l2aG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjU0NDIsImV4cCI6MjA5ODg0MTQ0Mn0.VT0hR_G6_jnXlO28UcdFnwfsM97zyKv4NKznIfEWH2Y');
+        let listaLocalCriancas = [];
+
+        async function carregarEspecialidadesDosProfissionais() {
+            const { data: profissionais } = await _supabase.from('profissionais').select('cargo');
+            const container = document.getElementById('container-especialidades-dinamicas');
+            const filtroSelect = document.getElementById('filtro-especialidade');
+            
+            let lista = [...new Set(profissionais?.map(p => p.cargo?.trim()).filter(Boolean))];
+
+            container.innerHTML = lista.map(esp => `
+                <label class="checkbox-option"><input type="checkbox" name="especialidades-aluno" value="${esp}"> <span>${esp}</span></label>`).join('') || '<p>Cadastre os profissionais primeiro.</p>';
+            filtroSelect.innerHTML = `<option value="Todos">Mostrar Todos</option>` + lista.map(esp => `<option value="${esp}">${esp}</option>`).join('');
+            renderTable();
+        }
+
+        async function renderTable() {
+            const { data: criancas } = await _supabase.from('criancas').select('*').order('nome');
+            listaLocalCriancas = criancas || [];
+            const filtro = document.getElementById('filtro-especialidade').value;
+            const tbody = document.getElementById('corpo-tabela');
+            tbody.innerHTML = "";
+
+            listaLocalCriancas.forEach(c => {
+                if(filtro !== "Todos" && !(c.especialidade || "").includes(filtro)) return;
+                let badges = (c.especialidade || "").split(', ').map(e => e ? `<span class="badge-especialidade">${e}</span>` : '').join(' ');
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${c.nome}</strong></td><td>${c.escola}</td>
+                        <td><span style="color:${c.aee === 'Sim' ? 'green':'red'}">${c.aee}</span></td>
+                        <td><div>${badges || 'Nenhuma'}</div></td>
+                        <td style="text-align:right">
+                            <button class="crud-btn" style="color:blue" onclick="prepararEdicao(${c.id}, '${c.nome}', '${c.escola}', '${c.aee}', '${c.especialidade}')"><i class="fas fa-edit"></i></button>
+                            <button class="crud-btn" style="color:red" onclick="remover(${c.id})"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        document.getElementById('form-crianca').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            let esp = [...document.querySelectorAll('input[name="especialidades-aluno"]:checked')].map(cb => cb.value).join(', ');
+
+            const payload = { nome: document.getElementById('nome').value, escola: document.getElementById('escola').value, aee: document.getElementById('aee').value,  especialidade: esp };
+
+            if(!id) { await _supabase.from('criancas').insert([payload]); }
+            else { await _supabase.from('criancas').update(payload).eq('id', id); }
+            
+            document.getElementById('form-crianca').reset();
+            document.getElementById('edit-id').value = "";
+            renderTable();
+        };
+
+        window.prepararEdicao = (id, nome, escola, aee, especialidades) => {
+            document.getElementById('edit-id').value = id;
+            document.getElementById('nome').value = nome;
+            document.getElementById('escola').value = escola;
+            document.getElementById('aee').value = aee;
+            document.querySelectorAll('input[name="especialidades-aluno"]').forEach(cb => cb.checked = especialidades.includes(cb.value));
+        };
+
+        window.remover = async (id) => {
+            if(confirm("Deseja deletar permanentemente?")) {
+                await _supabase.from('criancas').delete().eq('id', id);
+                renderTable();
+            }
+        };
+
+        function imprimirRelatorioAlunos() {
+            let linhas = listaLocalCriancas.map(c => `<tr><td>${c.nome}</td><td>${c.escola}</td><td>${c.aee}</td><td>${c.especialidade || 'Nenhuma'}</td></tr>`).join('');
+            document.getElementById('zona-impressao-alunos').innerHTML = `<h2>RELATÓRIO DE ALUNOS FREQUENTANTES</h2><table class="print-table"><thead><tr><th>Nome</th><th>Escola</th><th>AEE</th><th>Especialidades</th></tr></thead><tbody>${linhas}</tbody></table>`;
+            window.print();
+        }
+
+        carregarEspecialidadesDosProfissionais();
+    </script>
+</body>
+</html>
