@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAEE - Painel Principal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --caee-blue: #0000ff; --caee-yellow: #ffcc00; --caee-red: #ff0000; --caee-green: #008000; --bg-main: #f4f6fc; --card-shadow: 0 10px 25px rgba(0, 0, 0, 0.05); --sidebar-w: 280px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: var(--bg-main); display: flex; min-height: 100vh; color: #1e1b4b; }
+        .sidebar { width: var(--sidebar-w); background-color: var(--caee-blue); color: white; padding: 2.5rem 1.5rem; display: flex; flex-direction: column; position: fixed; height: 100vh; }
+        .sidebar h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: 2.5rem; color: var(--caee-yellow); text-shadow: 2px 2px 0px #000; }
+        .nav-links { list-style: none; flex-grow: 1; }
+        .nav-link { display: flex; align-items: center; gap: 14px; color: rgba(255,255,255,0.8); padding: 1rem 1.25rem; text-decoration: none; border-radius: 16px; margin-bottom: 0.75rem; font-weight: 600; }
+        .nav-link.active { background: var(--caee-yellow); color: #000; }
+        .btn-logout { background: var(--caee-red); border: none; color: white; margin-top: auto; cursor: pointer; justify-content: center; font-weight: 700; }
+        .main-content { margin-left: var(--sidebar-w); flex: 1; padding: 3rem; }
+        .banner-wrapper { width: 100%; background: white; padding: 10px; border-radius: 20px; box-shadow: var(--card-shadow); margin-bottom: 2.5rem; text-align: center; }
+        .banner-caee { width: 100%; max-height: 180px; object-fit: contain; border-radius: 12px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .metric-card { background: white; padding: 1.5rem; border-radius: 20px; box-shadow: var(--card-shadow); display: flex; align-items: center; justify-content: space-between; border-left: 6px solid var(--caee-blue); }
+        .metric-card.green { border-left-color: var(--caee-green); }
+        .metric-card p { font-size: 2rem; font-weight: 700; color: #111; }
+        .metric-icon { font-size: 2.5rem; opacity: 0.2; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-bottom: 2.5rem; }
+        .card { background: white; border-radius: 24px; padding: 2rem; box-shadow: var(--card-shadow); border-top: 6px solid var(--caee-blue); margin-bottom: 2rem; }
+        .card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
+        input, select { width: 100%; padding: 12px; margin-top: 6px; margin-bottom: 12px; border: 2px solid #e2e8f0; border-radius: 12px; background: #f8fafc; }
+        .btn-submit-form { color: white; font-weight: 700; padding: 12px; width: 100%; border: none; border-radius: 12px; cursor: pointer; }
+        .btn-blue { background: var(--caee-blue); }
+        .btn-print { background: var(--caee-green); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .dia-grupo { margin-bottom: 1.5rem; background: #f8fafc; padding: 1rem; border-radius: 16px; border-left: 5px solid var(--caee-blue); }
+        .dia-titulo { font-weight: 700; color: #1e1b4b; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .list-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; background: white; border-radius: 12px; margin-bottom: 8px; }
+        .row-actions { display: flex; gap: 10px; }
+        .btn-row-action { border: none; background: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; }
+        .btn-edit { color: var(--caee-blue); }
+        .btn-delete { color: var(--caee-red); }
+        .badge-especialidade { background: #e0e7ff; color: var(--caee-blue); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; display: inline-block; margin: 2px; }
+        .badge-yes { background: #dcfce7; color: var(--caee-green); padding: 4px 10px; border-radius: 30px; font-weight: 700; }
+        .badge-no { background: #fee2e2; color: var(--caee-red); padding: 4px 10px; border-radius: 30px; font-weight: 700; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
+        th { text-align: left; padding: 8px 12px; color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
+        td { padding: 12px; background: #f8fafc; font-size: 0.9rem; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; }
+        @media print {
+            body { background: white; color: black; }
+            .sidebar, .main-content > *:not(.print-section), .dashboard-grid, .metrics-grid, .banner-wrapper, .card { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+            .print-section { display: block !important; }
+            .print-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .print-table th, .print-table td { border: 1px solid black; padding: 12px; }
+        }
+        .print-section { display: none; }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <h2><i class="fas fa-puzzle-piece"></i> Gestão CAEE</h2>
+        <ul class="nav-links">
+            <li><a href="painel.html" class="nav-link active"><i class="fas fa-chart-pie"></i> Painel Geral</a></li>
+            <li><a href="cadastro-crianca.html" class="nav-link"><i class="fas fa-child"></i> Gerenciar Crianças</a></li>
+            <li><a href="cadastro-profissional.html" class="nav-link"><i class="fas fa-user-doctor"></i> Gerenciar Equipe</a></li>
+            <li><a href="calendario-eventos.html" class="nav-link"><i class="fas fa-calendar-days"></i> Eventos e Ações</a></li>
+        </ul>
+        <button class="nav-link btn-logout" onclick="sessionStorage.removeItem('usuarioLogado'); window.location.href='index.html';">Sair</button>
+    </aside>
+
+    <main class="main-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div class="banner-wrapper" style="margin-bottom: 0; width: 65%;"><img src="caee.png" class="banner-caee" alt="Logo CAEE"></div>
+            <button class="btn-print" onclick="gerarRelatorioMensal()"><i class="fas fa-print"></i> Relatório Mensal (Quantitativo)</button>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card"><div><h4>Alunos</h4><p id="total-alunos">0</p></div><i class="fas fa-children metric-icon" style="color: var(--caee-blue)"></i></div>
+            <div class="metric-card green"><div><h4>Atendimentos Semanais</h4><p id="total-agendas">0</p></div><i class="fas fa-calendar-check metric-icon" style="color: var(--caee-green)"></i></div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3 id="titulo-agenda-form"><i class="fas fa-calendar-plus" style="color: var(--caee-blue)"></i> Novo Agendamento</h3>
+                <form id="form-agenda">
+                    <input type="hidden" id="edit-agenda-id">
+                    <label>Aluno:</label><select id="agenda-aluno" required></select>
+                    <label>Profissional:</label><select id="agenda-prof" required></select>
+                    <label>Dia da Semana:</label>
+                    <select id="agenda-dia" required>
+                        <option value="Segunda-feira">Segunda-feira</option><option value="Terça-feira">Terça-feira</option><option value="Quarta-feira">Quarta-feira</option><option value="Quinta-feira">Quinta-feira</option><option value="Sexta-feira">Sexta-feira</option>
+                    </select>
+                    <label>Horário:</label><input type="text" id="agenda-data" placeholder="Ex: 14:00" required>
+                    <button type="submit" class="btn-submit-form btn-blue" id="btn-submit-agenda">Confirmar</button>
+                </form>
+            </div>
+            <div class="card" style="border-top-color: var(--caee-yellow);">
+                <h3><i class="fas fa-clock" style="color: #d97706"></i> Atendimentos por Dia</h3>
+                <div id="lista-agendamentos-agrupados"></div>
+            </div>
+        </div>
+
+        <div class="card" style="border-top-color: var(--caee-yellow);">
+            <h3><i class="fas fa-children" style="color: #d97706"></i> Monitoramento Geral</h3>
+            <table>
+                <thead><tr><th>Aluno</th><th>Escola Regular</th><th>Sala AEE?</th><th>Especialidades</th></tr></thead>
+                <tbody id="tabela-criancas"></tbody>
+            </table>
+        </div>
+        <div id="zona-impressao" class="print-section"></div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const _supabase = supabase.createClient('https://entcirynxefxdncivhmy.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVudGNpcnlueGVmeGRuY2l2aG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMyNjU0NDIsImV4cCI6MjA5ODg0MTQ0Mn0.VT0hR_G6_jnXlO28UcdFnwfsM97zyKv4NKznIfEWH2Y');
+        let listaGlobalAgendamentos = [];
+
+        async function inicializarPainel() {
+            const { data: criancas } = await _supabase.from('criancas').select('*').order('nome');
+            const { data: profissionais } = await _supabase.from('profissionais').select('*').order('nome');
+            const { data: agendamentos } = await _supabase.from('agendamentos').select('*');
+            
+            listaGlobalAgendamentos = agendamentos || [];
+
+            document.getElementById('total-alunos').innerText = criancas?.length || 0;
+            document.getElementById('total-agendas').innerText = agendamentos?.length || 0;
+
+            document.getElementById('agenda-aluno').innerHTML = criancas?.map(a => `<option value="${a.nome}">${a.nome}</option>`).join('') || '';
+            document.getElementById('agenda-prof').innerHTML = profissionais?.map(p => `<option value="${p.nome} - ${p.cargo}">${p.nome} (${p.cargo})</option>`).join('') || '';
+
+            const container = document.getElementById('lista-agendamentos-agrupados');
+            container.innerHTML = "";
+            const dias = ["Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira"];
+            
+            dias.forEach(dia => {
+                const filtered = listaGlobalAgendamentos.filter(ag => ag.diaSemana === dia);
+                if (filtered.length > 0) {
+                    let html = `<div class="dia-grupo"><span class="dia-titulo"><i class="fas fa-calendar-day" style="color:var(--caee-green)"></i> ${dia}</span>`;
+                    filtered.forEach(ag => {
+                        html += `
+                            <div class="list-row">
+                                <div><strong>${ag.aluno}</strong><br><small>${ag.profissional}</small></div>
+                                <div style="text-align:right">
+                                    <span style="font-weight:700;color:var(--caee-blue);">${ag.dataHora}</span><br>
+                                    <div class="row-actions">
+                                        <button onclick="editarAgenda(${ag.id}, '${ag.aluno}', '${ag.profissional}', '${ag.diaSemana}', '${ag.dataHora}')" class="btn-row-action btn-edit">Editar</button>
+                                        <button onclick="cancelarAgenda(${ag.id})" class="btn-row-action btn-delete">Remover</button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                    container.innerHTML += html + `</div>`;
+                }
+            });
+
+            const tableAlunos = document.getElementById('tabela-criancas');
+            tableAlunos.innerHTML = criancas?.map(c => `
+                <tr>
+                    <td><strong>${c.nome}</strong></td>
+                    <td>${c.escola}</td>
+                    <td><span class="badge ${c.aee === 'Sim' ? 'badge-yes' : 'badge-no'}">${c.aee}</span></td>
+                    <td><div>${(c.especialidade || '').split(', ').map(e => `<span class="badge-especialidade">${e}</span>`).join(' ')}</div></td>
+                </tr>`).join('') || "<tr><td colspan='4'>Nenhum aluno cadastrado.</td></tr>";
+        }
+
+        document.getElementById('form-agenda').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-agenda-id').value;
+            const payload = {
+                aluno: document.getElementById('agenda-aluno').value,
+                profissional: document.getElementById('agenda-prof').value,
+                diaSemana: document.getElementById('agenda-dia').value,
+                dataHora: document.getElementById('agenda-data').value
+            };
+
+            if(!id) { await _supabase.from('agendamentos').insert([payload]); } 
+            else { await _supabase.from('agendamentos').update(payload).eq('id', id); }
+            
+            document.getElementById('form-agenda').reset();
+            document.getElementById('edit-agenda-id').value = "";
+            document.getElementById('titulo-agenda-form').innerHTML = "<i class='fas fa-calendar-plus'></i> Novo Agendamento";
+            inicializarPainel();
+        };
+
+        window.editarAgenda = (id, aluno, prof, dia, hora) => {
+            document.getElementById('edit-agenda-id').value = id;
+            document.getElementById('agenda-aluno').value = aluno;
+            document.getElementById('agenda-prof').value = prof;
+            document.getElementById('agenda-dia').value = dia;
+            document.getElementById('agenda-data').value = hora;
+            document.getElementById('titulo-agenda-form').innerHTML = "<i class='fas fa-edit'></i> Modificar Atendimento";
+        };
+
+        window.cancelarAgenda = async (id) => {
+            if(confirm("Deseja remover este atendimento?")) {
+                await _supabase.from('agendamentos').delete().eq('id', id);
+                inicializarPainel();
+            }
+        };
+
+        function gerarRelatorioMensal() {
+            let contagem = {};
+            listaGlobalAgendamentos.forEach(ag => {
+                let prof = ag.profissional || "";
+                let esp = prof.includes('-') ? prof.split('-')[1].trim() : prof.includes('|') ? prof.split('|')[1].trim() : "Geral";
+                contagem[esp] = (contagem[esp] || 0) + 1;
+            });
+
+            let lines = Object.keys(contagem).map(esp => `<tr><td><strong>${esp}</strong></td><td>${contagem[esp]} Atendimentos</td></tr>`).join('');
+            document.getElementById('zona-impressao').innerHTML = `
+                <div style="text-align:center;margin-bottom:30px;">
+                    <h2>CENTRO DE ATENDIMENTO EDUCACIONAL ESPECIALIZADO - CAEE</h2>
+                    <h3>RELATÓRIO QUANTITATIVO MENSAL DE ATENDIMENTOS</h3>
+                    <p>Emitido em: ${new Date().toLocaleDateString('pt-BR')}</p>
+                </div>
+                <table class="print-table"><thead><tr><th>Especialidade</th><th>Total</th></tr></thead><tbody>${lines || '<tr><td colspan="2">Nenhum registro.</td></tr>'}</tbody></table>`;
+            window.print();
+        }
+
+        inicializarPainel();
+    </script>
+</body>
+</html>
